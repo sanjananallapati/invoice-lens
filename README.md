@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://invoice-lens.onrender.com">🚀 Live Application</a> ·
+  <a href="[https://invoice-lens.onrender.com](https://invoice-lens.onrender.com/)">🚀 Live Application</a> ·
   <a href="https://github.com/sanjananallapati/invoice-lens">GitHub Repository</a>
 </p>
 
