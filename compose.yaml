@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3000"
+    env_file: .env
+    environment:
+      PORT: 3000
+      DATA_DIR: /app/data
+      PYTHON_BIN: /opt/venv/bin/python
+    volumes:
+      - invoice_data:/app/data
+    restart: unless-stopped
+volumes:
+  invoice_data:

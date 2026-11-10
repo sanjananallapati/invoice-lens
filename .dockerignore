@@ -1,0 +1,9 @@
+node_modules
+dist
+data
+.env
+.venv
+.git
+__pycache__
+*.zip
+data-backup-*

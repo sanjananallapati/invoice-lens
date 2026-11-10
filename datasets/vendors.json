@@ -1,0 +1,34 @@
+[
+  {
+    "id": "V001",
+    "name": "Apex Office Supplies",
+    "aliases": [
+      "Apex Office Supplies Pvt Ltd"
+    ],
+    "approved": true
+  },
+  {
+    "id": "V002",
+    "name": "Nova IT Services",
+    "aliases": [],
+    "approved": true
+  },
+  {
+    "id": "V003",
+    "name": "Vertex Equipment",
+    "aliases": [],
+    "approved": true
+  },
+  {
+    "id": "V004",
+    "name": "Harbor Logistics",
+    "aliases": [],
+    "approved": false
+  },
+  {
+    "id": "V005",
+    "name": "Cedar Design Studio",
+    "aliases": [],
+    "approved": true
+  }
+]

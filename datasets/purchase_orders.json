@@ -1,0 +1,66 @@
+[
+  {
+    "id": "PO-101",
+    "vendor_id": "V001",
+    "currency": "INR",
+    "amount": "50000.00",
+    "baseline_billed": "0.00",
+    "description": "Office equipment"
+  },
+  {
+    "id": "PO-102",
+    "vendor_id": "V002",
+    "currency": "INR",
+    "amount": "80000.00",
+    "baseline_billed": "30000.00",
+    "description": "IT support contract"
+  },
+  {
+    "id": "PO-103",
+    "vendor_id": "V003",
+    "currency": "INR",
+    "amount": "25000.00",
+    "baseline_billed": "0.00",
+    "description": "Equipment rental"
+  },
+  {
+    "id": "PO-104",
+    "vendor_id": "V005",
+    "currency": "INR",
+    "amount": "30000.00",
+    "baseline_billed": "0.00",
+    "description": "Brand refresh"
+  },
+  {
+    "id": "PO-105",
+    "vendor_id": "V005",
+    "currency": "INR",
+    "amount": "30000.00",
+    "baseline_billed": "0.00",
+    "description": "Website design"
+  },
+  {
+    "id": "PO-106",
+    "vendor_id": "V004",
+    "currency": "INR",
+    "amount": "20000.00",
+    "baseline_billed": "0.00",
+    "description": "Transport services"
+  },
+  {
+    "id": "PO-107",
+    "vendor_id": "V003",
+    "currency": "USD",
+    "amount": "2000.00",
+    "baseline_billed": "0.00",
+    "description": "Imported equipment"
+  },
+  {
+    "id": "PO-108",
+    "vendor_id": "V001",
+    "currency": "INR",
+    "amount": "10000.00",
+    "baseline_billed": "0.00",
+    "description": "Stationery replenishment"
+  }
+]

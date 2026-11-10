@@ -1,0 +1,9 @@
+id,vendor_id,currency,amount,baseline_billed,description
+PO-101,V001,INR,50000.00,0.00,Office equipment
+PO-102,V002,INR,80000.00,30000.00,IT support contract
+PO-103,V003,INR,25000.00,0.00,Equipment rental
+PO-104,V005,INR,30000.00,0.00,Brand refresh
+PO-105,V005,INR,30000.00,0.00,Website design
+PO-106,V004,INR,20000.00,0.00,Transport services
+PO-107,V003,USD,2000.00,0.00,Imported equipment
+PO-108,V001,INR,10000.00,0.00,Stationery replenishment

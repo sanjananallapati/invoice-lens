@@ -1,0 +1,86 @@
+[
+  {
+    "id": "01-clean",
+    "title": "Clean invoice",
+    "file": "01-clean.pdf",
+    "expected": "APPROVED",
+    "note": "All checks pass. Run this first."
+  },
+  {
+    "id": "02-renamed-duplicate",
+    "title": "Duplicate, different layout",
+    "file": "02-renamed-duplicate.pdf",
+    "expected": "REJECTED",
+    "note": "Run after 01. Alias and normalized invoice ID reveal a duplicate despite a different PDF."
+  },
+  {
+    "id": "03-partial-first",
+    "title": "Partial billing: first installment",
+    "file": "03-partial-first.pdf",
+    "expected": "APPROVED",
+    "note": "Baseline billed is 30,000. Remaining balance falls from 50,000 to 25,000."
+  },
+  {
+    "id": "04-partial-overrun",
+    "title": "Partial billing: overrun",
+    "file": "04-partial-overrun.pdf",
+    "expected": "REJECTED",
+    "note": "Run after 03. Cumulative billing becomes 85,000 against an 80,000 PO."
+  },
+  {
+    "id": "05-ambiguous",
+    "title": "Missing PO, two candidates",
+    "file": "05-ambiguous.pdf",
+    "expected": "REVIEW",
+    "note": "Two open POs fit. Never guess which one."
+  },
+  {
+    "id": "06-math-mismatch",
+    "title": "Plausible total, broken arithmetic",
+    "file": "06-math-mismatch.pdf",
+    "expected": "REVIEW",
+    "note": "Subtotal + tax is 23,600, not the printed 24,000."
+  },
+  {
+    "id": "07-unapproved",
+    "title": "Unapproved vendor",
+    "file": "07-unapproved.pdf",
+    "expected": "REJECTED",
+    "note": "The PO exists but this vendor is not approved."
+  },
+  {
+    "id": "08-missing-number",
+    "title": "Missing invoice identity",
+    "file": "08-missing-number.pdf",
+    "expected": "REVIEW",
+    "note": "Missing invoice number prevents reliable deduplication."
+  },
+  {
+    "id": "09-currency",
+    "title": "Currency disagreement",
+    "file": "09-currency.pdf",
+    "expected": "REVIEW",
+    "note": "PO is USD; invoice is INR. No implicit exchange-rate conversion."
+  },
+  {
+    "id": "10-tolerance",
+    "title": "Small rounding variance",
+    "file": "10-tolerance.pdf",
+    "expected": "APPROVED",
+    "note": "50 above PO is within the configured min(1% of PO, 100) cumulative tolerance."
+  },
+  {
+    "id": "11-scanned",
+    "title": "Image-only scanned PDF",
+    "file": "11-scanned.pdf",
+    "expected": "APPROVED",
+    "note": "Real image-only PDF; requires Tesseract OCR. Low OCR quality routes to review."
+  },
+  {
+    "id": "12-wrong-vendor",
+    "title": "PO belongs to another vendor",
+    "file": "12-wrong-vendor.pdf",
+    "expected": "REJECTED",
+    "note": "An explicit PO reference is not proof the vendor owns it."
+  }
+]
