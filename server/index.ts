@@ -23,7 +23,10 @@ const equal = (a: string, b: string) =>
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "same-origin");
-  if (process.env.APP_USER) {
+  if (
+  process.env.APP_USER &&
+  !(req.method === "GET" && req.path === "/api/health")
+){
     const encoded = req.headers.authorization?.split(" ")[1] || "";
     const value = Buffer.from(encoded, "base64").toString();
     if (!equal(value, `${process.env.APP_USER}:${process.env.APP_PASSWORD}`)) {
