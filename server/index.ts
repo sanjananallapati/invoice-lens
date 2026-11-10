@@ -3,6 +3,8 @@ import express from "express";
 import multer from "multer";
 import fs from "node:fs";
 import path from "node:path";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 import { randomUUID, createHash, timingSafeEqual } from "node:crypto";
 import { makeStore, type Run } from "./store.ts";
 import { readPDF, extract } from "./extract.ts";
@@ -10,6 +12,13 @@ import { decide, remaining } from "./domain.ts";
 const root = path.resolve(process.env.DATA_DIR || "data");
 const store = makeStore(root);
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] },
+});
+io.on("connection", (socket) => {
+  console.log(`Client connected: ${socket.id}`);
+});
 app.disable("x-powered-by");
 if (!["local", "openai"].includes(process.env.EXTRACTION_MODE || "local"))
   throw new Error("EXTRACTION_MODE must be local or openai.");
@@ -61,7 +70,7 @@ app.use("/api", (req, res, next) => {
 app.use(express.json({ limit: "20kb" }));
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 0 },
+  limits: { fileSize: 10 * 1024 * 1024, files: 1, fields: 1 },
 });
 const publicRun = (run: Run) => {
   const { filePath, ...visible } = run;
@@ -81,9 +90,14 @@ const event = (run: Run, stage: string, message: string) => {
   run.events.push({ stage, message, at: new Date().toISOString() });
   store.save(run);
 };
-async function processRun(id: string) {
+async function processRun(id: string, socketId?: string) {
   const run = store.get(id)!;
+  const emitStep = (stepId: string, status: string, detail?: string) => {
+    if (socketId)
+      io.to(socketId).emit("step:update", { id: stepId, status, detail });
+  };
   try {
+    emitStep("extract", "running");
     event(run, "read", "Reading every page; image-only pages use OCR.");
     const reading = await readPDF(run.filePath);
     run.reading = reading;
@@ -96,6 +110,14 @@ async function processRun(id: string) {
     run.invoice = result.invoice;
     run.extractionMode = result.mode;
     run.extractionIssues = result.issues;
+    emitStep(
+      "extract",
+      "success",
+      `Extracted Vendor: ${result.invoice.vendor_name || "unknown"}, Total: ${result.invoice.total || "unknown"}`,
+    );
+    emitStep("db_lookup", "running");
+    emitStep("math_check", "running");
+    emitStep("decision", "running");
     event(
       run,
       "validate",
@@ -126,19 +148,39 @@ async function processRun(id: string) {
       store.db.exec("ROLLBACK");
       throw e;
     }
+    emitStep(
+      "db_lookup",
+      "success",
+      run.poId
+        ? `Matched PO #${run.poId} in database.`
+        : "Purchase-order lookup completed; no PO was matched.",
+    );
+    emitStep(
+      "math_check",
+      "success",
+      run.checks?.find((check: { code: string }) => check.code === "arithmetic")
+        ?.detail || "Math validation completed.",
+    );
+    emitStep("decision", "success", `Decision: ${run.status}. ${run.summary}`);
   } catch (e: any) {
     run.status = "ERROR";
     run.error = e.message || "Processing failed.";
     event(run, "error", run.error);
+    emitStep("decision", "error", "Pipeline failed during execution.");
   }
 }
 const queue: string[] = [];
+const socketIds = new Map<string, string>();
 let working = false;
 async function drain() {
   if (working) return;
   working = true;
   try {
-    while (queue.length) await processRun(queue.shift()!);
+    while (queue.length) {
+      const id = queue.shift()!;
+      await processRun(id, socketIds.get(id));
+      socketIds.delete(id);
+    }
   } finally {
     working = false;
   }
@@ -203,6 +245,8 @@ app.post("/api/runs", upload.single("invoice"), (req, res) => {
     notes: [],
   };
   store.save(run);
+  if (typeof req.body?.socketId === "string")
+    socketIds.set(id, req.body.socketId);
   queue.push(id);
   res.status(202).json(publicRun(run));
   void drain();
@@ -251,6 +295,26 @@ app.post("/api/runs/:id/notes", (req, res) => {
   run.notes.push({ text: text.trim(), at: new Date().toISOString() });
   store.save(run);
   res.json(publicRun(run));
+});
+app.post("/api/clear", async (_req, res) => {
+  if (working || queue.length) {
+    res.status(409).json({ error: "Wait until processing finishes." });
+    return;
+  }
+  const directory = path.join(root, "uploads");
+  try {
+    const files = await fs.promises.readdir(directory, {
+      withFileTypes: true,
+    });
+    await Promise.all(
+      files
+        .filter((file) => file.isFile() && file.name !== ".gitkeep")
+        .map((file) => fs.promises.unlink(path.join(directory, file.name))),
+    );
+    res.status(200).json({ status: "cleared" });
+  } catch {
+    res.status(500).json({ error: "Could not clear uploaded files." });
+  }
 });
 app.get("/api/runs/:id/events", (req, res) => {
   if (!store.get(req.params.id)) {
@@ -322,7 +386,7 @@ const port = Number(
   portArg >= 0 ? process.argv[portArg + 1] : process.env.PORT || 3000,
 );
 const host = hostArg >= 0 ? process.argv[hostArg + 1] : "0.0.0.0";
-app.listen(port, host, () =>
+httpServer.listen(port, host, () =>
   console.log(
     `Invoice Lens running at http://localhost:${port} (${process.env.EXTRACTION_MODE || "local"} extraction)`,
   ),
